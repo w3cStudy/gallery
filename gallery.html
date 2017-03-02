@@ -1,0 +1,228 @@
+<HTML>
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        .wrap {
+            position: absolute;
+            width: 100%;
+            height: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: yellow;
+            perspective: 800px;
+            overflow: hidden;
+        }
+
+        /*海报样式*/
+        .photo {
+            position: absolute;
+            z-index: 1;
+            height: 80%;
+            width: 20%;
+            
+            transition:all 1s;
+        }
+
+        .photo-center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 99;
+        }
+
+        .photo-wrap {
+            width: 100%;
+            height: 100%;
+            background-color: green;
+            transform-style: preserve-3d;
+            transition: all 3s ease-in-out;
+        }
+
+        .image {
+            width: 100%;
+            height: 90%;
+            background-color: black;
+            margin-bottom: 10px;
+        }
+
+        .side {
+
+            transition: all 3s;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+            position: absolute;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .caption {
+            text-align: center;
+            /*line-height: 10%;*/
+            height: 10%;
+            font-size: 20px;
+            box-sizing: border-box;
+        }
+
+        .side-front {
+            transform: rotateY(0deg)
+        }
+
+        .side-back {
+            transform: rotateY(180deg);
+        }
+
+        .side {
+            backface-visibility: hidden;
+        }
+
+        .desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5em;
+            padding: 20px;
+        }
+
+        .photo_front .photo-wrap {
+            transform: translate(0px, 0px) rotateY(0deg);
+        }
+
+        .photo_back .photo-wrap {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="photo  photo_front" onclick="turn(this)" id="photo_{{index}}">
+        <div class="photo-wrap">
+            <div class="side side-front">
+                <div class="image">
+                    <img src="./images/{{img}}">
+                </div>
+                <p class="caption">
+                    {{caption}}
+                </p>
+            </div>
+            <div class="side side-back">
+                <p class="desc">
+                    {{desc}}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./jquery/jquery-3.1.1.js"></script>
+<script src="./images/data.js"></script>
+<script>
+
+    function addPhotos() {
+        var template = $('.wrap').html();
+        var html = [];
+        for (var i = 0; i < data.length; i++) {
+           var temp= template.replace("{{index}}", i).replace("{{img}}", data[i].img).replace("{{caption}}", data[i].caption)
+                    .replace("{{desc}}",data[i].desc);
+            html.push(temp);
+        }
+        $('.wrap').html(html.join(" "));
+        resort(1);
+    }
+
+    addPhotos();
+    function turn(elem) {
+        debugger;
+        var cls = elem.className;
+        if(/photo-center/.test(cls)){
+            if (/photo_front/.test(cls)) {
+                cls = cls.replace("photo_front", "photo_back");
+            } else {
+                cls = cls.replace("photo_back", "photo_front");
+            }
+            elem.className = cls;
+        }else{
+            var index=elem.id.split("_")[1];
+            resort(index);
+            //cls=cls+" photo_center";
+            //elem.className = cls;
+
+        }
+
+
+    }
+    function random(range) {
+        var max = Math.max(range[0], range[1]);
+        var min = Math.min(range[0], range[1]);
+        var diff = max - min;
+        var r = Math.floor(Math.random() * diff + min);
+        return r;
+    }
+
+    function getRange() {
+        var range = {
+            left: {
+                x: [],
+                y: []
+            },
+            right: {
+                x: [],
+                y: []
+            }
+        };
+        var wrap = {
+            width: $('.wrap').width(),
+            height: $('.wrap').height(),
+        }
+
+        var photo = {
+            width: $('.photo').width(),
+            height: $('.photo').height()
+        }
+
+        range.left.x = [0 - photo.width, wrap.width / 2 - photo.width/2];
+        range.left.y = [0 - photo.height, wrap.height];
+        range.right.x = [wrap.width/2, wrap.width];
+        range.right.y = range.left.y;
+        return range;
+    }
+
+    function resort(n){
+        debugger;
+        var photos=$('.photo');
+        var photo_center=photos.splice(n,1);
+        var photo_left=photos.splice(0,photos.length/2);
+        var photo_right=photos;
+        var range=getRange();
+        for(var i=0;i<photo_left.length;i++ ){
+            var pl=photo_left[i];
+            $(pl).css("left",random(range.left.x));
+            $(pl).css("top",random(range.left.y));
+           // $(pl).animate({transform:'rotate(30deg)'});
+            pl.style.transform="rotate("+random([-45,45])+"deg)";
+        }
+
+        for(var i=0;i<photo_right.length;i++ ){
+            var pl=photo_right[i];
+            $(pl).css("left",random(range.right.x));
+            $(pl).css("top",random(range.right.y));
+            pl.style.transform="rotate("+random([-45,45])+"deg)";
+        }
+        $('.photo-center').removeClass("photo-center");
+        $(photo_center).addClass("photo-center");
+        $(photo_center).removeAttr("style");
+    }
+</script>
+</body>
+</HTML>
